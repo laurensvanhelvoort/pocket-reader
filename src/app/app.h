@@ -18,6 +18,9 @@ extern const Screen chaptersScreen;
 extern const Screen uploadScreen;
 extern const Screen infoScreen;
 extern const Screen settingsScreen;
+extern const Screen introScreen;
+
+extern const char* const kVersion;
 
 void goTo(const Screen& screen);
 const Screen* previousScreen();

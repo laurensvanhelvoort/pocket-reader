@@ -80,6 +80,7 @@ void enter(uint32_t now) {
         index = libraryIndexOf(last);
     }
     wheel.reset(library.size() + 2, index < 0 ? 0 : index);
+    if (previousScreen() == &introScreen) wheel.slideIn(-2.5f, now, 450);
     draw(now);
 }
 

@@ -80,6 +80,28 @@ void drawWedgeH(LovyanGFX& g, int y, int xWide, int dir) {
     }
 }
 
+void drawWedge(LovyanGFX& g, float x, float y, float angle, float level) {
+    const float dx = cosf(angle), dy = sinf(angle);
+    const float tipX = x + dx * kTickLen, tipY = y + dy * kTickLen;
+    const int x0 = (int)floorf(fminf(x, tipX)) - 3, x1 = (int)ceilf(fmaxf(x, tipX)) + 3;
+    const int y0 = (int)floorf(fminf(y, tipY)) - 3, y1 = (int)ceilf(fmaxf(y, tipY)) + 3;
+    for (int py = y0; py <= y1; ++py) {
+        for (int px = x0; px <= x1; ++px) {
+            int hits = 0;
+            for (int sy = 0; sy < 4; ++sy) {
+                for (int sx = 0; sx < 4; ++sx) {
+                    const float ox = px + (sx + 0.5f) / 4 - x, oy = py + (sy + 0.5f) / 4 - y;
+                    const float u = ox * dx + oy * dy;
+                    if (u < 0 || u > kTickLen) continue;
+                    const float half = (kTickWide + (kTickNarrow - kTickWide) * u / kTickLen) / 2;
+                    if (fabsf(oy * dx - ox * dy) <= half) ++hits;
+                }
+            }
+            if (hits) blendPixel(g, px, py, level * hits / 16.0f);
+        }
+    }
+}
+
 void fitText(LovyanGFX& g, const char* text, int maxWidth, char* out, size_t cap) {
     copyUtf8(out, text, cap);
     if (g.textWidth(out) <= maxWidth) return;
@@ -114,14 +136,14 @@ void Wheel::reset(int count, int selected) {
 
 float Wheel::position(uint32_t now) const {
     if (animStart_ == 0) return selected_;
-    float t = (now - animStart_) / (float)kWheelAnimMs;
+    float t = (now - animStart_) / (float)animMs_;
     if (t >= 1) return selected_;
     t = 1 - (1 - t) * (1 - t) * (1 - t);
     return from_ + (selected_ - from_) * t;
 }
 
 bool Wheel::animating(uint32_t now) const {
-    return animStart_ != 0 && now - animStart_ < kWheelAnimMs + 20;
+    return animStart_ != 0 && now - animStart_ < animMs_ + 20;
 }
 
 void Wheel::scroll(int clicks, uint32_t now) {
@@ -129,6 +151,13 @@ void Wheel::scroll(int clicks, uint32_t now) {
     from_ = position(now);
     selected_ = constrain(selected_ + clicks, 0, count_ - 1);
     animStart_ = now ? now : 1;
+    animMs_ = kWheelAnimMs;
+}
+
+void Wheel::slideIn(float offset, uint32_t now, uint32_t ms) {
+    from_ = selected_ + offset;
+    animStart_ = now ? now : 1;
+    animMs_ = ms;
 }
 
 void Wheel::draw(LovyanGFX& g, uint32_t now, TextFn label, TextFn info, StyleFn style) {

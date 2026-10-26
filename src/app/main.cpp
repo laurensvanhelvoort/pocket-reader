@@ -13,6 +13,8 @@ const Screen* previous = nullptr;
 
 }
 
+const char* const kVersion = "1.0";
+
 void goTo(const Screen& screen) {
     pending = &screen;
 }
@@ -30,7 +32,7 @@ void setup() {
     beginSettings();
     setBacklight(options.brightness);
     if (!LittleFS.begin(true)) Serial.println("pocket-reader: LittleFS start niet");
-    goTo(libraryScreen);
+    goTo(introScreen);
 }
 
 void loop() {
@@ -40,7 +42,6 @@ void loop() {
         previous = current;
         current = pending;
         pending = nullptr;
-        lcd.fillScreen(TFT_BLACK);
         current->enter(now);
     }
     const Input in = readControls(now);

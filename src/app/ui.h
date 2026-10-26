@@ -23,6 +23,8 @@ const int kTickLen = 15;
 // Anti-aliased against black. dir = +1 points the tip down (V) or right (H).
 void drawWedgeV(LovyanGFX& g, int x, int yWide, int dir);
 void drawWedgeH(LovyanGFX& g, int y, int xWide, int dir);
+// Same wedge at any angle: wide end centred on (x, y), tip towards angle (radians, y down).
+void drawWedge(LovyanGFX& g, float x, float y, float angle, float level = 1.0f);
 
 void fitText(LovyanGFX& g, const char* text, int maxWidth, char* out, size_t cap);
 
@@ -40,6 +42,7 @@ public:
 
     void reset(int count, int selected);
     void scroll(int clicks, uint32_t now);
+    void slideIn(float offset, uint32_t now, uint32_t ms);
     int selected() const { return selected_; }
     int count() const { return count_; }
     bool animating(uint32_t now) const;
@@ -53,4 +56,5 @@ private:
     int selected_ = 0;
     float from_ = 0;
     uint32_t animStart_ = 0;
+    uint32_t animMs_ = 140;
 };
