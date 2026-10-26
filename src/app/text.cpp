@@ -172,7 +172,7 @@ Ending wordEnding(const char* w) {
     return Ending::None;
 }
 
-uint32_t durationMs(int letters, Ending ending, bool paragraphEnd, int wpm) {
+float durationFactor(int letters, Ending ending, bool paragraphEnd) {
     float factor = 1.0f;
     if (letters > 6) factor += kExtraPerLetter * (letters - 6);
     if (paragraphEnd) {
@@ -182,7 +182,67 @@ uint32_t durationMs(int letters, Ending ending, bool paragraphEnd, int wpm) {
     } else if (ending == Ending::Clause) {
         factor += 0.5f;
     }
-    return (uint32_t)(60000.0f / wpm * factor);
+    return factor;
+}
+
+uint32_t durationMs(int letters, Ending ending, bool paragraphEnd, int wpm) {
+    return (uint32_t)(60000.0f / wpm * durationFactor(letters, ending, paragraphEnd));
+}
+
+bool splitChapterTitle(const char* title, char* prefix, size_t cap, const char** rest) {
+    const char* const dash = " \xE2\x80\x94 ";
+    const char* at = strstr(title, dash);
+    if (at == nullptr || at[strlen(dash)] == '\0') return false;
+    const size_t n = at - title;
+    copyUtf8(prefix, title, n + 1 < cap ? n + 1 : cap);
+    *rest = at + strlen(dash);
+    return true;
+}
+
+void appendLetterKey(const char* s, char* out, size_t cap) {
+    size_t len = strlen(out);
+    for (int i = 0; s[i] != '\0';) {
+        const int start = i;
+        uint32_t cp = decodeUtf8(s, i);
+        if (!isLetterCp(cp)) continue;
+        if (cp < 0x80) {
+            if (len + 1 >= cap) break;
+            out[len++] = (char)tolower((int)cp);
+        } else if (cp < 0x800) {
+            if (cp >= 0xC0 && cp <= 0xDE && cp != 0xD7) cp += 0x20;
+            if (len + 2 >= cap) break;
+            out[len++] = (char)(0xC0 | (cp >> 6));
+            out[len++] = (char)(0x80 | (cp & 0x3F));
+        } else {
+            if (len + (i - start) >= cap) break;
+            memcpy(out + len, s + start, i - start);
+            len += i - start;
+        }
+    }
+    out[len] = '\0';
+}
+
+void formatMinutes(uint32_t minutes, char* out, size_t cap) {
+    if (minutes < 1) {
+        snprintf(out, cap, "<1 min");
+    } else if (minutes < 60) {
+        snprintf(out, cap, "%lu min", (unsigned long)minutes);
+    } else if (minutes % 60 == 0) {
+        snprintf(out, cap, "%lu u", (unsigned long)(minutes / 60));
+    } else {
+        snprintf(out, cap, "%lu u %lu min", (unsigned long)(minutes / 60), (unsigned long)(minutes % 60));
+    }
+}
+
+void formatCount(uint32_t n, char* out, size_t cap) {
+    if (n >= 1000000) {
+        snprintf(out, cap, "%lu.%03lu.%03lu", (unsigned long)(n / 1000000), (unsigned long)(n / 1000 % 1000),
+                 (unsigned long)(n % 1000));
+    } else if (n >= 1000) {
+        snprintf(out, cap, "%lu.%03lu", (unsigned long)(n / 1000), (unsigned long)(n % 1000));
+    } else {
+        snprintf(out, cap, "%lu", (unsigned long)n);
+    }
 }
 
 int chunkWord(const char* w, Chunk* out, bool (*fits)(const char*)) {

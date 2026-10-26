@@ -41,8 +41,8 @@ uint16_t grey(uint8_t level) {
     return lcd.color565(level, level, level);
 }
 
-uint16_t gold() {
-    return lcd.color565(240, 205, 120);
+uint16_t gold(float level) {
+    return lcd.color565((uint8_t)(240 * level), (uint8_t)(205 * level), (uint8_t)(120 * level));
 }
 
 void initUi() {
@@ -52,6 +52,10 @@ void initUi() {
         frame.setPsram(false);
         if (frame.createSprite(kScreenW, kScreenH) == nullptr) Serial.println("ui: te weinig geheugen voor het scherm");
     }
+}
+
+void setBacklight(int percent) {
+    lcd.setBrightness((uint8_t)(constrain(percent, 5, 100) * 255 / 100));
 }
 
 void drawWedgeV(LovyanGFX& g, int x, int yWide, int dir) {
@@ -127,7 +131,7 @@ void Wheel::scroll(int clicks, uint32_t now) {
     animStart_ = now ? now : 1;
 }
 
-void Wheel::draw(LovyanGFX& g, uint32_t now, TextFn label, TextFn info) {
+void Wheel::draw(LovyanGFX& g, uint32_t now, TextFn label, TextFn info, StyleFn style) {
     const float pos = position(now);
     char text[128];
     char fitted[128];
@@ -146,8 +150,13 @@ void Wheel::draw(LovyanGFX& g, uint32_t now, TextFn label, TextFn info) {
         } else if (ad > 0.5f) {
             level = 255 - (ad - 0.5f) * 2 * 105;
         }
+        const uint8_t st = style != nullptr ? style(i) : 0;
         g.setFont(big ? &fontTitle.font : &fontSmall.font);
-        g.setTextColor(grey((uint8_t)level));
+        if (st & kStyleAccent) {
+            g.setTextColor(gold(level / 255));
+        } else {
+            g.setTextColor(grey((uint8_t)(st & kStyleDim ? level * 0.5f : level)));
+        }
         label(i, text, sizeof(text));
         fitText(g, text, big ? 236 : 256, fitted, sizeof(fitted));
         g.drawString(fitted, kCenterX, (int)lroundf(rowY(d)));
@@ -155,8 +164,9 @@ void Wheel::draw(LovyanGFX& g, uint32_t now, TextFn label, TextFn info) {
 
     if (info != nullptr && count_ > 0 && fabsf(pos - selected_) < 0.01f) {
         info(selected_, text, sizeof(text));
+        const uint8_t st = style != nullptr ? style(selected_) : 0;
         g.setFont(&fontMono.font);
-        g.setTextColor(grey(kInfoGrey));
+        g.setTextColor(st & kStyleInfoAccent ? gold() : grey(kInfoGrey));
         fitText(g, text, 256, fitted, sizeof(fitted));
         g.drawString(fitted, kCenterX, kInfoY);
     }

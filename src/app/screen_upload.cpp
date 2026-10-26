@@ -29,7 +29,7 @@ void draw() {
     frame.setTextDatum(baseline_center);
     frame.setFont(&fontSmall.font);
     frame.setTextColor(grey(150));
-    frame.drawString("verbind met wifi", kScreenW / 2, 56);
+    frame.drawString("Verbind met wifi", kScreenW / 2, 56);
     frame.setFont(&fontTitle.font);
     frame.setTextColor(grey(255));
     frame.drawString(kWifiName, kScreenW / 2, 92);
@@ -42,15 +42,15 @@ void draw() {
 
     uint16_t color = grey(150);
     if (s.receiving) {
-        snprintf(text, sizeof(text), "ontvangen: %lu kB", (unsigned long)(s.received / 1024));
+        snprintf(text, sizeof(text), "Ontvangen: %lu kB", (unsigned long)(s.received / 1024));
     } else if (s.lastError[0] != '\0') {
-        snprintf(text, sizeof(text), "mislukt: %s", s.lastError);
+        snprintf(text, sizeof(text), "Mislukt: %s", s.lastError);
         color = lcd.color565(226, 131, 111);
     } else if (s.lastTitle[0] != '\0') {
-        snprintf(text, sizeof(text), "toegevoegd: %s", s.lastTitle);
+        snprintf(text, sizeof(text), "Toegevoegd: %s", s.lastTitle);
         color = gold();
     } else if (webStations() > 0) {
-        copyUtf8(text, "verbonden", sizeof(text));
+        copyUtf8(text, "Verbonden", sizeof(text));
     } else {
         text[0] = '\0';
     }

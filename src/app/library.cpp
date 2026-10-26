@@ -40,12 +40,17 @@ void scanLibrary() {
         copyUtf8(info.author, scanBook.author(), sizeof(info.author));
         info.percent = scanBook.percent(loadPosition(path));
         info.size = scanBook.size();
+        info.order = bookOrder(path);
+        info.finished = isFinished(path);
         library.push_back(info);
         scanBook.close();
     }
 
-    std::sort(library.begin(), library.end(),
-              [](const BookInfo& a, const BookInfo& b) { return strcasecmp(a.title, b.title) < 0; });
+    std::sort(library.begin(), library.end(), [](const BookInfo& a, const BookInfo& b) {
+        if (a.finished != b.finished) return !a.finished;
+        if (a.order != b.order) return a.order > b.order;
+        return strcasecmp(a.title, b.title) < 0;
+    });
 }
 
 int libraryIndexOf(const char* path) {

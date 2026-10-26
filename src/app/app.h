@@ -16,8 +16,13 @@ extern const Screen readerScreen;
 extern const Screen menuScreen;
 extern const Screen chaptersScreen;
 extern const Screen uploadScreen;
+extern const Screen infoScreen;
+extern const Screen settingsScreen;
 
 void goTo(const Screen& screen);
+const Screen* previousScreen();
+
+extern const Screen* settingsBack;
 
 extern Book book;
 

@@ -22,7 +22,7 @@ bool Book::open(const char* path) {
     bufStart_ = 0;
     bufLen_ = 0;
     copyUtf8(path_, path, sizeof(path_));
-    title_[0] = author_[0] = '\0';
+    title_[0] = author_[0] = language_[0] = year_[0] = '\0';
 
     char line[256];
     uint32_t pos = 0;
@@ -40,6 +40,10 @@ bool Book::open(const char* path) {
             copyUtf8(title_, line + 7, sizeof(title_));
         } else if (startsWith(line, "author: ")) {
             copyUtf8(author_, line + 8, sizeof(author_));
+        } else if (startsWith(line, "language: ")) {
+            copyUtf8(language_, line + 10, sizeof(language_));
+        } else if (startsWith(line, "year: ")) {
+            copyUtf8(year_, line + 6, sizeof(year_));
         } else if (startsWith(line, "chapter: ")) {
             Chapter c;
             char* rest;

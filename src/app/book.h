@@ -27,6 +27,8 @@ public:
     const char* path() const { return path_; }
     const char* title() const { return title_; }
     const char* author() const { return author_; }
+    const char* language() const { return language_; }
+    const char* year() const { return year_; }
     uint32_t bodyStart() const { return bodyStart_; }
     uint32_t size() const { return size_; }
 
@@ -52,6 +54,8 @@ private:
     char path_[48] = "";
     char title_[84] = "";
     char author_[84] = "";
+    char language_[16] = "";
+    char year_[8] = "";
     uint32_t bodyStart_ = 0;
     uint32_t size_ = 0;
     std::vector<Chapter> chapters_;

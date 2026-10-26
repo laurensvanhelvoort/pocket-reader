@@ -9,11 +9,16 @@ namespace {
 
 const Screen* current = nullptr;
 const Screen* pending = nullptr;
+const Screen* previous = nullptr;
 
 }
 
 void goTo(const Screen& screen) {
     pending = &screen;
+}
+
+const Screen* previousScreen() {
+    return previous;
 }
 
 void setup() {
@@ -23,6 +28,7 @@ void setup() {
     initUi();
     beginControls();
     beginSettings();
+    setBacklight(options.brightness);
     if (!LittleFS.begin(true)) Serial.println("pocket-reader: LittleFS start niet");
     goTo(libraryScreen);
 }
@@ -31,6 +37,7 @@ void loop() {
     const uint32_t now = millis();
     if (pending != nullptr) {
         if (current != nullptr && current->leave != nullptr) current->leave();
+        previous = current;
         current = pending;
         pending = nullptr;
         lcd.fillScreen(TFT_BLACK);

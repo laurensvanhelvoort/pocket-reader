@@ -129,6 +129,7 @@ void finishUpload() {
         failUpload("opslaan mislukt");
         return;
     }
+    touchBook(path);
     if (probe.open(path)) {
         copyUtf8(status.lastTitle, probe.title(), sizeof(status.lastTitle));
         probe.close();
@@ -201,7 +202,7 @@ void handleDelete() {
         sendError(404, "boek niet gevonden");
         return;
     }
-    forgetPosition(path);
+    forgetBook(path);
     ++status.changes;
     sendJson(200, "{\"ok\":true}");
 }
