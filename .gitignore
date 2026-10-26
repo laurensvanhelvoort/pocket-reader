@@ -1,0 +1,13 @@
+/*
+!/.gitignore
+!/LICENSE
+!/README.md
+!/platformio.ini
+!/partitions.csv
+!/licenses/
+!/include/
+/include/*
+!/include/display.h
+!/src/
+/src/*
+!/src/app/
